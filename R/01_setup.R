@@ -2,20 +2,8 @@
 # Load packages and establish DB connection. 
 # Note: you will be prompted for a password via pop-up.
 
-  # .3C]-^'X@g9P,qM
-# Internal_Reference	.SiteToLSOA_DriveTime
-# UKHF_Rural_Urban_Class.	LSOAs_2021_Map1
-# UKHF_Demography.Index_Of_Multiple_Deprivation_By_LSOA1
-# Internal_Reference	.Region
-# age_at_cds..., sex,
-# ethnic_group 
-# charlson - requires age and der diag all
+# cat(keyring::key_get("login"))
 
-# --LEFT JOIN (
-#   --SELECT providersitecode, providersitename, lsoaname, distancemiles, offpeakdrivetime 
-#   --FROM Internal_Reference.SiteToLSOA_DriveTime
-#   --) travel
-# --ON
 
 # library("gt")
 # library("gtExtras")
@@ -43,6 +31,8 @@ library("stringr")
 library("lubridate")
 # library("patchwork")
 # library("yardstick")
+
+source(here("R", "charlson_function.R"))
 
 options(scipen=999) 
 

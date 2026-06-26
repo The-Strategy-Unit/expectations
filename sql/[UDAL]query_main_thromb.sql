@@ -20,24 +20,38 @@ WE ARE DEFINING A PATIENT COHORT (THOSE I63 DIAG) AND LOOKING AT TREATMENT.
 TODO: SO PERHAPS THE 8 CASES ARE INCLUDED?
 */
 
+/* SET MONDAY AS WEEKDAY 1 (FOR DATEPART) */
+SET DATEFIRST 1 
+
 SELECT   
     [Der_Financial_Year] as 'fyear',
     [Der_Activity_Month] as 'month',
     [der_spell_id],      
     [der_pseudo_nhs_number] as 'nhs_no',
     [Admission_Date],
+    [Admission_Time],
     [Discharge_Date],
-    [episode_start_date], 
+    [Discharge_Time],
+    [episode_start_date],
+    [episode_start_time],
     [episode_end_date], 
-    /*
-    [site_code_of_treatment_at_episode_start_date],
-    [site_code_of_treatment_at_episode_end_date],  
-    */
+    [episode_end_time],
+    CASE
+      WHEN DATEPART(weekday, [Admission_Date]) IN ('6', '7')
+      THEN 1
+      ELSE 0
+    END AS 'is_wkend',
+    CASE
+      WHEN [sex] IN ('1', '2')
+      THEN [sex]
+      ELSE 'not specified'
+    END AS 'sex',
     [der_age_at_cds_activity_date] as 'age',
-    [sex],
     [ethnic_group],
     [der_postcode_lsoa_2011_code] as 'lsoa11code',
     [der_postcode_lsoa_2021_code] as 'lsoa21code',
+    [site_code_of_treatment_at_episode_start_date],
+    [site_code_of_treatment_at_episode_end_date],  
     [Der_Provider_Site_Code],
     [site_name],
     [trust_name],
@@ -68,11 +82,20 @@ FROM [Reporting_MESH_APC].[APCE_Core_Monthly_Snapshot] core
         from Reporting_UKHD_ODS.Provider_Site
     ) sites ON core.der_provider_site_code = sites.site_code
 WHERE 1 = 1
-    AND [Deleted] = 0
+    /* COHORT BEING: PATIENTS WHO HAD CEREBRAL INFARCTION AS PRIMARY DIAG */
+    AND [Der_Primary_Diagnosis_Code] LIKE 'I63%'
+    /* AND [Der_Diagnosis_All] LIKE '%I63%'*/
+    /* ADMITTED IN AN EMERGENCY (OR TRANSFERRED IN SOME FORM) */
+    AND (
+      LEFT([Admission_Method], 1) = '2' OR 
+      [Admission_Method] = '81'
+      )
+    /* STUDY PERIOD AND OTHER EXCLUSIONS */  
     AND YEAR(Admission_Date) >= 2014
     AND [Der_Financial_Year] <> '2013/14'
-    /* COHORT BEING: PATIENTS WHO HAD CEREBRAL INFARCTION */
-    AND [Der_Primary_Diagnosis_Code] LIKE 'I63%'
-    /* NOTE: FURTHER EXCLUSIONS APPLIED IN R WORKFLOW */
+    AND [Der_Financial_Year] <> '2026/27'
+    AND [Deleted] = 0
+    AND [der_age_at_cds_activity_date] <= 112
+    /* NOTE: LSOA-BASED EXCLUSIONS APPLIED IN R WORKFLOW */
     
     

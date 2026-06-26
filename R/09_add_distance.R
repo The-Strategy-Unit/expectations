@@ -1,6 +1,6 @@
 # README
-# LSOA 21 BESTFITS WEIGHTED CENTROIDS DISTANCE TO COORDS OF THROMBECTOMY 
-# CENTRE WHICH IS NEAREST (BY STRAIGHT LINE DISTANCE)
+# STRAIGHT LINE DISTANCE FROM THE POPN WEIGHTED CENTROIDS OF EACH LSOA 21 BESTFIT
+# TO COORDS OF THROMBECTOMY CENTRE WHICH IS NEAREST
 
 # https://www.data.gov.uk/dataset/e3e903a6-1864-4083-8837-017b6bdf8cc5/lower-layer-super-output-areas-december-2021-ew-population-weighted-centroids2
 # curl::curl_download(
@@ -108,7 +108,7 @@ df_min_distance <- df_distance_by_year |>
 lkp_distance_nearest_thromb <- df_min_distance |> 
   select(lsoa21_bfit, fyear, distance) |> 
   mutate(distance = as.numeric(distance)) |> 
-  rename(dist_nrst_thromb_ctr = distance)
+  rename(min_thromb_dist = distance)
 
 
 # -------------------------------------------------------------------------

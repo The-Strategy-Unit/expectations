@@ -26,6 +26,7 @@ CASE
   THEN 1
   ELSE 0
 END AS 'diag_stenosis',
+/*
 CASE 
   WHEN [Der_Diagnosis_ALL] LIKE '%I352%'
   THEN 1
@@ -41,6 +42,7 @@ CASE
   THEN 1
   ELSE 0
 END AS 'diag_complctn',
+*/
 CASE 
   WHEN [Der_Procedure_All] LIKE '%Y79%'
   THEN 1
@@ -52,10 +54,23 @@ CASE
   ELSE 0
 END AS 'proc_app_trnsapical',
 CASE 
+  WHEN [Der_Procedure_All] LIKE '%Y53%' 
+    OR [Der_Procedure_All] LIKE '%Y68%' 
+  THEN 1
+  ELSE 0
+END AS 'proc_image_codes',
+CASE 
+  WHEN [Der_Procedure_All] LIKE '%U202%' 
+  THEN 1
+  ELSE 0
+END AS 'proc_echocardio_codes',
+/*
+CASE 
   WHEN [Der_Procedure_All] LIKE '%Y78%'
   THEN 1
   ELSE 0
 END AS 'proc_app_other',
+*/
 COUNT(*) AS 'n'
 FROM [Reporting_MESH_APC].[APCS_Core_Monthly_Snapshot]
 WHERE 1 = 1
@@ -85,21 +100,6 @@ CASE
   ELSE 0
 END,
 CASE 
-  WHEN [Der_Diagnosis_ALL] LIKE '%I352%'
-  THEN 1
-  ELSE 0
-END,
-CASE 
-  WHEN [Der_Diagnosis_ALL] LIKE '%I35[189]%'
-  THEN 1
-  ELSE 0
-END,
-CASE 
-  WHEN [Der_Diagnosis_ALL] LIKE '%T82[029]%'
-  THEN 1
-  ELSE 0
-END,
-CASE 
   WHEN [Der_Procedure_All] LIKE '%Y79%'
   THEN 1
   ELSE 0
@@ -110,7 +110,13 @@ CASE
   ELSE 0
 END,
 CASE 
-  WHEN [Der_Procedure_All] LIKE '%Y78%'
+  WHEN [Der_Procedure_All] LIKE '%Y53%' 
+    OR [Der_Procedure_All] LIKE '%Y68%' 
   THEN 1
   ELSE 0
-END 
+END,
+CASE 
+  WHEN [Der_Procedure_All] LIKE '%U202%' 
+  THEN 1
+  ELSE 0
+END

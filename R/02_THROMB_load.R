@@ -3,11 +3,11 @@
 
 # source(here::here("R", "01_setup.R"))
 
-# TODO: NOTE: IN 2025/26 LSOA ONLY 95.7% COMPLETE. NOT ONLY IN LATTER MONTHS.
+# TODO: NOTE: ACROSS 2025/26 LSOA ONLY 95.7% COMPLETE.
 
 # 1. MAIN QUERIES ---------------------------------------------------------
 
-## a. thrombectomy -------------------------------------------------------
+## a. thrombectomy epi -------------------------------------------------------
 
 # READ AND RUN QUERY FROM SCRIPT IN THE SQL FOLDER:
 sql_script_thromb <- here("sql", "[UDAL]query_main_thromb.sql")
@@ -17,11 +17,25 @@ query_thromb <- readChar(sql_script_thromb, file.info(sql_script_thromb)$size) |
 
 df_thromb <- dbGetQuery(con_one, query_thromb) |>
   as_tibble() |>
-  clean_names() 
+  clean_names()
 
 gc()
 gc()
 
+## b. thrombectomy spell -------------------------------------------------------
+
+# # READ AND RUN QUERY FROM SCRIPT IN THE SQL FOLDER:
+# sql_script_thromb <- here("sql", "[UDAL]query_main_thromb_spell.sql")
+# 
+# query_thromb <- readChar(sql_script_thromb, file.info(sql_script_thromb)$size) |>
+#   str_replace_all(string = _, "\n|\r|ï»¿", " ")
+# 
+# df_thromb <- dbGetQuery(con_one, query_thromb) |>
+#   as_tibble() |>
+#   clean_names()
+# 
+# gc()
+# gc()
 
 # 2. IMD 2025 -----------------------------------------------------------------
 # CHOOSING IMD 2025 AS CLEANER; CONTRIBUTING INDICATORS INCLUDE 
@@ -186,3 +200,45 @@ lkp_regione <-  read_csv(
 #   filter(thrombo_modern == 1 | thrombo_legacy == 1) |> 
 #   # filter( stroke_ischaemic == 1 | stroke_other == 1) |> 
 #   count(trust_name) 
+
+# 8. TESTING LSOA  ------------------------------------------------------
+# 
+# # READ AND RUN QUERY FROM SCRIPT IN THE SQL FOLDER:
+# sql_script_test <- here("sql", "test_lsoa.sql")
+# 
+# query_audit_test <- readChar(sql_script_test, file.info(sql_script_test)$size) |>
+#   str_replace_all(string = _, "\n|\r|ï»¿", " ")
+# 
+# df_audit_thromb_test3 <- dbGetQuery(con_one, query_audit_test) |>
+#   as_tibble() |>
+#   clean_names()
+# 
+# gc()
+# gc()
+# 
+# df_audit_thromb_test3 |>
+#   # print(n=36)
+#   group_by(fyear, is_elective, null_lsoa11) |>
+#   reframe(n = sum(n)) |>
+#   ungroup() |>
+#   group_by(fyear, is_elective) |>
+#   mutate(p = n/sum(n)) |>
+#   ungroup()   |>
+#   filter(null_lsoa11 == 0) |>
+#   select(-c(null_lsoa11, n)) |>
+#   mutate(is_elective = case_when(
+#     is_elective == 1 ~ "Admission Method 11, 12, 13",
+#     is_elective == 0 ~ "NOT Admission Method 11, 12, 13",
+#   )) |>
+#   # pivot_wider(names_from = is_elective, values_from = p) |>
+#   # rename(admimeth_11_12_13 = `1`, admimeth_not_11_12_13 = `0`) |>
+#   # pivot_longer()
+#   ggplot(aes(fyear, p, col = is_elective,group = is_elective))+
+#   geom_line()+
+#   geom_point()+
+#   facet_wrap(vars(is_elective))+ # , ncol = 1
+#   theme_minimal()+
+#   scale_y_continuous(labels = scales::percent)+
+#   labs(y = "% completion of LSOA 2011 code\n")+
+#   theme(legend.position = "none", axis.text.x = element_text(size = 7))
+# 
