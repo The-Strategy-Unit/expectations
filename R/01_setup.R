@@ -4,7 +4,6 @@
 
 # cat(keyring::key_get("login"))
 
-
 # library("gt")
 # library("gtExtras")
 library("sf")

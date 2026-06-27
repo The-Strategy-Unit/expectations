@@ -1,12 +1,11 @@
 # README
-# WE WANT IMD AS PROXY FOR EXPECTATION 
-# IMD ASSIGNMENT DEPENDS ON LSOA
+# WE WANT IMD AS PROXY FOR EXPECTATION AND IMD ASSIGNMENT DEPENDS ON LSOA
 # OPTIONS HER: EITHER:
 # - USE 2011 LSOA (CODED FOR ALL YEARS) AND IMD (2019); OR
 # - USE 2021 LSOA (WITH BESTFIT LKP) AND IMD (2025)
 #
 # SEE:
-   # df_stenosis_avr |>
+   # df_tavi_raw |>
    #   count(fyear, lsoa11 = !is.na(lsoa11code), lsoa21 = !is.na(lsoa21code)) |>
    #   group_by(fyear) |>
    #   mutate(p = n/sum(n)) |>
@@ -21,7 +20,7 @@
 
 #
 # ALSO LSOA CODING DIPS 10-20% - INEXPLICABLY - IN 2025/26:
-   # df_stenosis_avr |>
+   # df_tavi_raw |>
    #   filter(fyear == "2024/25" | fyear == "2025/26" | fyear == "2026/27" ) |>
    #   # count(month, lsoa = !is.na(lsoa11code)) |>
    #   count(month, lsoa = !is.na(lsoa21code)) |>
@@ -39,6 +38,7 @@
 # THIS BEST FIT LOOKUP ENABLES CONVERSION FROM 2011 TO 2021
 # CAN'T BE DOING BACK CONVERSION SINCE MISSING 1K 2021 LSOAs 
 # "1,044 LSOAs are missing from the 2021 LSOAs"
+# MANUAL DOWNLOAD:
 # https://geoportal.statistics.gov.uk/datasets/ons::lsoa-2011-to-lsoa-2021-to-local-authority-district-2022-best-fit-lookup-for-ew-v2/about
 
 lkp_lsoa_bestfit <- read_csv(

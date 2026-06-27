@@ -4,102 +4,33 @@
 # TAVIs in the year. The 2024/25 list tallies with the list of 
 # tavi centres given in the 24/25 NICOR TAVI audit.
 
-# Re-positioned in workflow since analysis aided by region lookup.
 
 # TAVI CENTRE VAR = CONTACT WITH A TAVI TEAM (AT THAT LOCATION)
-# TAVI CENTRE * REGION -- > TO ACCOUNT FOR POSSIBLE HUB AND SPOKE EXCEPTIONS
-
-# IF WE'RE NOT USING A TAVI CENTRE INDICATOR VAR IN THE MODEL
-# AND ONLY NEED THESE FOR THE DISTANCE TO VARS 
-# THEN WE ONLY NEED THE MAJOR SITE CODES AND DON'T NEED TO 
-# WORRY ABOUT SORTING OUT TOO MANY OF THE INCONSISTENCIES.
-
-# BUT WE MAY HAVE TO DEAL WITH A FAIR NUMBER OF LEGACY CODES. 
-# E.G. RT301, RT302: HAREFIELD, AND ROYAL BROMPTON.
+# TAVI CENTRE * REGION ? -- > TO ACCOUNT FOR POSSIBLE HUB AND SPOKE EXCEPTIONS
 
 lkp_tavi_centres_prelim <- tmp_tavi_elective_first_epi |> 
-  # filter(fyear == "2018/19") |> 
   filter(tavi == 1) |> 
   count(fyear, der_provider_site_code, site_name, sort = T) |> 
-  # count(fyear, rgn22nm, der_provider_site_code, site_name, sort = T) |> 
-  # group_by(fyear, der_provider_site_code) |> 
-  # filter(n == max(n)) |> 
-  # ungroup() |> 
-  # arrange(fyear, rgn22nm, -n) |> 
   arrange(fyear, -n) |> 
-  # group_by(der_provider_site_code) |> 
-  # mutate(n_tot = sum(n)) |> 
-  # filter(str_detect(der_provider_site_code, "^RBQ"))
-  # filter(n > 2 & n <6) |>
-  # print(n=40)
   # SEEMS AN APPROPRIATE CUTOFF ( < 3 EITHER TENUOUS TO CALL SPECIALIST OR ERROR)
   filter(n >= 4) |> # | (fyear %in% c("2010/11", "2011/12") & n >= 10)
-  # REMOVE GENERIC SITE CODES:
-  # filter(!str_detect(der_provider_site_code, "00$")) |> 
-  # # ESSEX IS AT BASILDON HOSP, SO JUST TAKE BASILDON FOR EASE OF POSTCODE:
-  # filter(der_provider_site_code != "D9Y3Y") |> 
-  # # NOT (OUTSOURCED TO) PRIVATE PROVIDERS:
-  # filter(!str_detect(der_provider_site_code, "^N")) |> 
-  # # ALSO NOT WELLINGTON (APPEARS TO BE NHS OUTSOURCED TO PRIVATE)
-  # filter(der_provider_site_code != "E8R5L") |> 
-  # # THIS WILL BE ACCOUNTED FOR BY KING'S, WHICH IS ALREADY PRESENT IN FYEAR:
-  # filter(der_provider_site_code != "Z4I0G ") |> 
-  # # THESE WILL BE ACCOUNTED FOR BY CENTRES WHICH ARE ALREADY PRESENT IN FYEAR:
-  # filter(!der_provider_site_code %in% c("Z4I0G", "R1H86", "RRV30", "RWA30")) |> 
-  # # filter(fyear %in% c("2010/11", "2011/12"))
-  # filter(der_provider_site_code == "R0A02")
   distinct(fyear, der_provider_site_code, site_name) |>
-  # count(fyear)
-  # select(-rgn22nm) |> 
   rename(site_code = 2) |> 
   mutate(across(3, ~ str_to_title(.))) |> 
   mutate(across(3, ~str_remove_all(. , " Nhs Trust| Nhs Foundation Trust")))  
 
 
-# lkp_tavi_centres_prelim |>  count(fyear)
-# lkp_tavi_centres_prelim |>  filter(fyear == "2024/25") |> print(n=40)
-
-# 
-# tmp_low_freq <- lkp_tavi_centres_prelim |>
+# low_freq :
+# lkp_tavi_centres_prelim |>
 #   count(site_code, site_name, sort = T) |> 
 #   print(n=80)
 #   filter(n < 7) |> 
 #   pull(site_code)
 
-# 
-## TAVIS PERFORMED IN TOTAL
-# df_tavi_elective_join_vars |> 
-#   # filter(der_provider_site_code == "RWA30")
-#   # filter(fyear == "2018/19") |> 
-#   filter(tavi == 1) |> 
-#   # GROUPING BY REGION WAS USED IN INITIAL MANUAL IDENTIFICATION PROCESS
-#   # WILL KEEP HERE, SINCE DON'T WANT TO CHANGE A PROCESS THAT APPEARS TO WORK:
-#   count(fyear, der_provider_site_code, site_name, sort = T) |> 
-#   filter(n >= 3) |> # | (fyear %in% c("2010/11", "2011/12") & n >= 10)
-#   # filter(der_provider_site_code %in% tmp_low_freq) |> 
-#   count(der_provider_site_code, site_name, wt = n, sort = T) |> 
-#   print(n=80)
-#   
-
-# lkp_tavi_centres_prelim |> 
-#   # count(fyear)
-#   filter(fyear == "2024/25") |> 
-#   print(n=40)
-  
-# # MANCHESTER IS NO LONGER A TAVI CENTRE
-# lkp_tavi_centres_prelim |>
-#   filter(fyear == "2019/20") |>
-#   print(n=70)
-  
-# TODO LOOK AT OTHERS..?
-# RKB00 --> RKB01
-# RAJ12 IS ALSO D9Y3Y
-# RRK
 
 lkp_tavi_centres <- lkp_tavi_centres_prelim |> 
   select(fyear, site_code) |> 
   mutate(tavi_centre = 1L) 
-
 
 
 # DISTANCE FROM LSOA TO NEAREST TAVI CENTRE ----------------------------------
@@ -147,14 +78,9 @@ lkp_tavi_centres_for_distance <- lkp_tavi_centres |>
   distinct(fyear, site_code)
 
 
-  
-  
-
 ## % TAVIs DONE IN "TAVI CENTRES" OVER TIME (SHOULD BE CONSTANTLY HIGH)
 ## THE EXCEPTIONS ARE PROBABLY LARGELY THE "OFF SITE" WORK OF TAVI CENTRES
   
-  
- 
 # df_tavi_elective_with_centres |>
 #   filter(tavi == 1) |>
 #   mutate(fyearint = as.integer(str_sub(fyear, 6, 7))) |>
