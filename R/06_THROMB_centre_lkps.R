@@ -4,9 +4,6 @@
 # thrombectomies in the year. The 2024/25 list here tallies with the
 # list of thrombectomy centres given in the 24/25 SSNAP audit.
 
-# TODO RECODE DATASET: IF TAVI AND RXH00 THEN RXH01  ETC
-
-
 lkp_thrombo_centres_prelim <- df_thromb_exclusions |> 
   filter(thromb == 1) |>
   # filter(fyear == "2024/25") |>
@@ -46,12 +43,6 @@ lkp_thrombo_centres_prelim <- df_thromb_exclusions |>
 # # THESE LOOK LIKE MISSPECIFICATIONS:
 # lkp_thrombo_centres_prelim |>
 #   filter(is.na(site_name))
-# 
-# lkp_thrombo_centres_prelim |>
-#   filter(str_detect(site_code, "RXH"))
-# 
-# lkp_thrombo_centres_prelim |> 
-#   # count(site_name) |> 
 
 lkp_thrombo_centres <- lkp_thrombo_centres_prelim |> 
   # REMOVE THE 00 SUFFIXES AS THESE APPEAR TO BE MISCODINGS OF SPECIFIC SITE CODES:
@@ -60,16 +51,15 @@ lkp_thrombo_centres <- lkp_thrombo_centres_prelim |>
   select(fyear, site_code) |> 
   mutate(started_at_thromb_centre = 1L) 
 
-# lkp_thrombo_centres |> filter(site_code == "R0D02")
-
-# lkp_thrombo_centres |>
-#   count(fyear)
-
-# lkp_thrombo_centres |>
-#   count(site_code)
-
 # lkp_thrombo_centres |> saveRDS(here("data", "lkp_thrombo_centres.rds"))
 # lkp_thrombo_centres <- readRDS(here("data", "lkp_thrombo_centres.rds"))
+
+
+# DISTANCE FROM LSOA TO NEAREST THROMB CENTRE ----------------------------------
+
+
+
+
 
 # APPLY TO MAIN DF ---------------------
 

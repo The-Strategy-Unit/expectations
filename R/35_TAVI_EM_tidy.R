@@ -1,25 +1,24 @@
 # README
 # Our desired unit of analysis is a continuous inpatient spell.
-# We only want one record per super-spell (transfers may complicate)
-# Superspells are very rare for tavi emergencies:
-# we remove only ~ 60 epis in this script.
+# We only want one record per super-spell but
+# Superspells are rare for tavi emergencies:
+# we remove only ~ 60 epis of 20k in this script.
 
 
 # FLAG ALL EPIS THAT WERE PART OF A TAVI SPELL
-df_tavi_emergency_spells_flagged <- df_tavi_emergency_exclusions |>
+df_tavi_emergency_spells_flagged <- df_tavi_emergency_exclusions |> 
   # GROUP BY SPELL ID IS NECESSARY. THE NHS NUMBER IS JUST IN CASE:
   group_by(nhs_no, der_spell_id) |> 
   mutate(tavi_spell = if_else(sum(tavi) > 0, 1, 0)) |> 
   ungroup()
 
-# df_tavi_emergency_spells_flagged |> 
+# df_tavi_emergency_spells_flagged |>
 #   count(tavi, tavi_spell)
 
 gc()
 gc()
 
 # FOR ALL SPELLS, TAKE ONLY 1st EPI PER SPELL.
-# THIS TAKES A MINUTE.
 df_tavi_emergency_earliest_episodes <- df_tavi_emergency_spells_flagged |> 
   mutate(across(c(contains("date"), -contains("treatment_at_")), ~ as_date(.))) |> 
   group_by(nhs_no, der_spell_id) |>
@@ -70,6 +69,8 @@ tmp_tavi_superspells <- tmp_tavi_nhs_no |>
   mutate(super_spell_id = cumsum(flag_new_super)) |> 
   ungroup() 
 
+
+
 ## b. label TAVI super spells -----------------------------
 
 tmp_tavi_superspells_2 <- tmp_tavi_superspells |> 
@@ -79,11 +80,15 @@ tmp_tavi_superspells_2 <- tmp_tavi_superspells |>
 
 # FIRST SPELL ----------------------------------------------------
 # TAKE ONLY THE FIRST SPELL IN ANY SUPER-SPELLS (TAVI OR NOT)
+# REMOVING 4 SPELLS THAT HAPPEN ON SAME DAY AS OTHER SPELL. 
+# NO SPELLS HAPPEN 1,2,3.. DAYS AFTER, WHICH IS REASSURING. 
 
 tmp_tavi_earliest_spell <- tmp_tavi_superspells_2 |> 
   group_by(nhs_no, super_spell_id) |> 
   filter(row_number() == min(row_number())) |> 
   ungroup()
+
+
 
 # tmp_earliest_spell |> count(thromb_superspell)
 # tmp_earliest_spell |> count(fyear, thromb_superspell) |> 

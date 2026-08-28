@@ -2,7 +2,7 @@
 # Load packages and establish DB connection. 
 # Note: you will be prompted for a password via pop-up.
 
-# cat(keyring::key_get("login"))
+clipr::write_clip(capture.output(cat(keyring::key_get("login"))))
 
 # library("gt")
 # library("gtExtras")
@@ -12,7 +12,7 @@ library("DBI")
 library("here")
 library("odbc")
 # library("mgcv")
-# library("broom")
+library("broom")
 library("dplyr")
 library("purrr")
 # library("furrr")
@@ -31,10 +31,9 @@ library("lubridate")
 # library("patchwork")
 # library("yardstick")
 
-source(here("R", "charlson_function.R"))
+source(here("R", "004_charlson_function.R"))
 
 options(scipen=999) 
-
 
 server <- keyring::key_get("server")
 db <- keyring::key_get("db")

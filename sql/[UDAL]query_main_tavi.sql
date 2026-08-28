@@ -82,3 +82,4 @@ WHERE 1=1
     AND [Deleted] = 0
     AND [der_age_at_cds_activity_date] <= 112
     /* NOTE: LSOA-BASED EXCLUSIONS APPLIED IN R WORKFLOW */
+  

@@ -35,18 +35,8 @@
 #
 # ***
 
-# THIS BEST FIT LOOKUP ENABLES CONVERSION FROM 2011 TO 2021
-# CAN'T BE DOING BACK CONVERSION SINCE MISSING 1K 2021 LSOAs 
-# "1,044 LSOAs are missing from the 2021 LSOAs"
-# https://geoportal.statistics.gov.uk/datasets/ons::lsoa-2011-to-lsoa-2021-to-local-authority-district-2022-best-fit-lookup-for-ew-v2/about
 
-lkp_lsoa_bestfit <- read_csv(
-  here("data", list.files(here("data"), pattern = "LSOA11"))
-) |>
-  clean_names() |>
-  select(lsoa11cd, lsoa21cd)
-
-df_thromb_standardise_lsoa <- df_thromb |>
+df_thromb_standard_lsoa <- df_thromb |>
   left_join(lkp_lsoa_bestfit, join_by(lsoa11code == lsoa11cd)) |> 
   rename(lsoa21_bfit = lsoa21cd) |> 
   select(everything(), -contains("lsoa"), lsoa21_bfit) 

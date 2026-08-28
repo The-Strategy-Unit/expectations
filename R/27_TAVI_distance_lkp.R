@@ -2,32 +2,8 @@
 # STRAIGHT LINE DISTANCE FROM THE POPN WEIGHTED CENTROIDS OF EACH LSOA 21 BESTFIT
 # TO COORDS OF TAVI CENTRE WHICH IS NEAREST
 
-# https://www.data.gov.uk/dataset/e3e903a6-1864-4083-8837-017b6bdf8cc5/lower-layer-super-output-areas-december-2021-ew-population-weighted-centroids2
-# curl::curl_download(
-#   url = "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/32729e42d05e4e23bc7e43a36aa4ae8b/excel?layers=0",
-#   destfile = here("data", "lsoa_centroids.xlsx")
-# )
-
-lkp_lsoa_centroids <- read_excel(here("data", "lsoa_centroids.xlsx")) |> 
-  clean_names() |> 
-  select(lsoa21cd, long = x, lat = y)
-
-
-# FOR SITE POSTCODES, WE'RE USING ERIC:
-# curl::curl_download(
-#   url = "https://files.digital.nhs.uk/AA/2375EE/ERIC%20-%202024_25%20-%20Site%20data.csv",
-#   destfile = here("data", "eric_2425.csv")
-# )
-
-eric <- read_csv(
-  here("data", "eric_2425.csv"),
-  col_names = T, 
-  col_select =  c(`Site Code`, `Site Name`, `Post Code`)
-) |> 
-  clean_names()
-
 # MANUALLY ADD POSTCODES (FROM ODS) THAT ERIC DOESN'T HAVE.
-eric_plus <- eric |> 
+eric_plus_for_tavi <- eric |> 
   # LEGACY CODE - LONDON CHEST HOSPITAL (1):
   add_row(
     site_code = "R1H83",
@@ -48,14 +24,14 @@ eric_plus <- eric |>
   ) 
 
 # CHECK ALL HAVE POSTCODES:
-lkp_tavi_centres_for_distance |>
-  distinct(site_code) |>
-  anti_join(eric_plus, join_by(site_code)) |>
-  left_join(
-    lkp_tavi_centres_prelim |>
-      distinct(site_code, site_name),
-    join_by(site_code)
-  )
+# lkp_tavi_centres_for_distance |>
+#   distinct(site_code) |>
+#   anti_join(eric_plus_for_tavi, join_by(site_code)) |>
+#   left_join(
+#     lkp_tavi_centres_prelim |>
+#       distinct(site_code, site_name),
+#     join_by(site_code)
+#   )
 
 # lkp_tavi_centres_for_distance |> 
 #   left_join(lkp_tavi_centres_prelim |> 
@@ -67,40 +43,37 @@ lkp_tavi_centres_for_distance |>
 #   view("wide")
 
 # ALL TAVI CENTRES IN LKP WITHOUT A POSTCODE MATCH.
-lkp_tavi_centres_for_distance |> 
-  distinct(site_code) |>
-  anti_join(eric_plus, join_by(site_code)) |>
-  left_join(lkp_tavi_centres_prelim |> 
-              distinct(site_code, site_name),
-            join_by(site_code)) 
-  left_join(eric_plus, join_by(site_code)) |> 
-  arrange(site_name) |> 
-  print(n=45)
+# lkp_tavi_centres_for_distance |> 
+#   distinct(site_code) |>
+#   anti_join(eric_plus_for_tavi, join_by(site_code)) |>
+#   left_join(lkp_tavi_centres_prelim |> 
+#               distinct(site_code, site_name),
+#             join_by(site_code)) 
+#   left_join(eric_plus_for_tavi, join_by(site_code)) |> 
+#   arrange(site_name) |> 
+#   print(n=45)
   
-# TODO rxh00 duplicated
 
-lkp_tavi_centres_for_distance |> 
-  left_join(eric_plus, join_by(site_code)) 
-  
-  # count(site_code, sort = T) |>
-  # tail(20)
-  left_join(lkp_tavi_centres_prelim |> 
-              distinct(site_code, site_name),
-            join_by(site_code)) |> 
-  # print(n=450)
-  mutate(n = 1) |> 
-  pivot_wider(names_from = fyear, values_from = n) |> 
-  view("wide")
+# # lkp_tavi_centres_for_distance |> 
+# #   left_join(eric_plus_for_tavi, join_by(site_code)) 
+#   
+#   # count(site_code, sort = T) |>
+#   # tail(20)
+#   left_join(lkp_tavi_centres_prelim |> 
+#               distinct(site_code, site_name),
+#             join_by(site_code)) |> 
+#   # print(n=450)
+#   mutate(n = 1) |> 
+#   pivot_wider(names_from = fyear, values_from = n) |> 
+#   view("wide")
   
 
 # -------------------------------------------------------------------------
 
-  
-
 # THESE ARE THE 30 UNIQUE POSTCODES:
 tmp_tavi_centre_postcodes <- lkp_tavi_centres_for_distance |> 
    distinct(site_code) |> 
-   left_join(eric_plus, join_by(site_code)) |> 
+   left_join(eric_plus_for_tavi, join_by(site_code)) |> 
    arrange(site_name) |> 
    print(n=45)
   
@@ -115,13 +88,13 @@ tmp_tavi_centre_postcodes <- lkp_tavi_centres_for_distance |>
 #   exdir = here("data")
 #   )
 
-lkp_postcode_coords <-  read_csv(
-  col_names = F,
-  here("data","open_postcode_geo.csv"),
-  col_select = c(1, 8, 9), # COLS 4, 5 = BNG (BRITISH NATIONAL GRID)
-)
+# lkp_postcode_coords <-  read_csv(
+#   col_names = F,
+#   here("data","open_postcode_geo.csv"),
+#   col_select = c(1, 8, 9), # COLS 4, 5 = BNG (BRITISH NATIONAL GRID)
+# )
 
-colnames(lkp_postcode_coords) <- c("post_code", "lat", "long") # "easting", "northing",
+# colnames(lkp_postcode_coords) <- c("post_code", "lat", "long") # "easting", "northing",
 
 df_tavi_centre_postcodes <- tmp_tavi_centre_postcodes |> 
   left_join(lkp_postcode_coords, join_by(post_code)) |> 
@@ -166,7 +139,7 @@ df_tavi_distance_by_year <- df_tavi_distance_combos_long |>
 gc()
 gc()
 
-# TODO THIS IS ALSO WHERE ONE COULD MAKE:
+# THIS IS ALSO WHERE ONE COULD MAKE:
 # "N CENTRES WITHIN 40/25 KM (15/25 MILES)"
 
 # THIS TAKES A MINUTE OR SO:

@@ -2,29 +2,6 @@
 # STRAIGHT LINE DISTANCE FROM THE POPN WEIGHTED CENTROIDS OF EACH LSOA 21 BESTFIT
 # TO COORDS OF THROMBECTOMY CENTRE WHICH IS NEAREST
 
-# https://www.data.gov.uk/dataset/e3e903a6-1864-4083-8837-017b6bdf8cc5/lower-layer-super-output-areas-december-2021-ew-population-weighted-centroids2
-# curl::curl_download(
-#   url = "https://open-geography-portalx-ons.hub.arcgis.com/api/download/v1/items/32729e42d05e4e23bc7e43a36aa4ae8b/excel?layers=0",
-#   destfile = here("data", "lsoa_centroids.xlsx")
-# )
-
-lkp_lsoa_centroids <- read_excel(here("data", "lsoa_centroids.xlsx")) |> 
-  clean_names() |> 
-  select(lsoa21cd, long = x, lat = y)
-
-
-# curl::curl_download(
-#   url = "https://files.digital.nhs.uk/AA/2375EE/ERIC%20-%202024_25%20-%20Site%20data.csv",
-#   destfile = here("data", "eric_2425.csv")
-# )
-
-eric <- read_csv(
-  here("data", "eric_2425.csv"),
-  col_names = T, 
-  col_select =  c(`Site Code`, `Site Name`, `Post Code`)
-) |> 
-   clean_names()
-
 eric_plus <- eric |> 
   # LEGACY CODE FOR SUSSEX:
   add_row(
@@ -33,31 +10,11 @@ eric_plus <- eric |>
     post_code = "BN2 5BE"
     )
   
- 
-# THESE ARE THE 28 (27 UNIQUE) POSTCODES:
+ # THESE ARE THE 28 (27 UNIQUE) POSTCODES:
 tmp_centre_postcodes <- lkp_thrombo_centres |> 
   distinct(site_code) |> 
   left_join(eric_plus, join_by(site_code)) |> 
   print(n=40)
-
- 
-# curl::curl_download(
-#   url = "https://download.getthedata.com/downloads/open_postcode_geo.csv.zip",
-#   destfile = here("data", "open_postcode_geo.csv.zip")
-# )
-
-# unzip(
-#   zipfile = here("data", "open_postcode_geo.csv.zip"), 
-#   exdir = here("data")
-#   )
-
-lkp_postcode_coords <-  read_csv(
-  col_names = F,
-  here("data","open_postcode_geo.csv"),
-  col_select = c(1, 8, 9), # 4, 5 = BNG
-    )
-
-colnames(lkp_postcode_coords) <- c("post_code", "lat", "long") # "easting", "northing",
 
 df_centre_postcodes <- tmp_centre_postcodes |> 
   left_join(lkp_postcode_coords, join_by(post_code)) |> 
