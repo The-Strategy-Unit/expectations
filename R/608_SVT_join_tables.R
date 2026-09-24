@@ -1,22 +1,23 @@
 
 
 # ABLATIONS ESCALATIONS (%) BY IMD, BY YEAR
-# df_afib_exclusions |> 
-#   left_join(lkp_imd25, join_by(lsoa21code == lsoa_code_2021)) |> 
-#   count(yr, ablation_24m, imd_decile) |> 
-#   group_by(yr, imd_decile) |> 
-#   mutate(p = n/sum(n)) |> 
-#   ungroup() |> 
-#   filter(ablation_24m == 1) |> 
-#   # pivot_wider(names_from = ablation_24m, values_from = n) |> 
+# df_svt_exclusions |>
+#   left_join(lkp_imd25, join_by(lsoa21code == lsoa_code_2021)) |>
+#   count(yr, ablation_24m, imd_decile) |>
+#   group_by(yr, imd_decile) |>
+#   mutate(p = n/sum(n)) |>
+#   ungroup() |>
+#   filter(ablation_24m == 1) |>
+#   # pivot_wider(names_from = ablation_24m, values_from = n) |>
 #   # filter(fyear == "2023/24")
 #   # print(n=30)
 #   ggplot(aes(yr, p, col = as.factor(imd_decile)))+
 #   geom_smooth(se = F, method = "lm")+
-#   geom_blank(aes(y=0))
+#   geom_blank(aes(y=0))+
+#   scale_color_viridis_d()
 
 
-df_afib_join_tables <- df_afib_exclusions |> 
+df_svt_join_tables <- df_svt_exclusions |> 
   left_join(lkp_imd25, join_by(lsoa21code == lsoa_code_2021)) |>
   left_join(lkp_rural, join_by(lsoa21code == lsoa_code)) |>
   left_join(lkp_icb, join_by(lsoa21code == lsoa21cd)) |> 
@@ -30,28 +31,56 @@ df_afib_join_tables <- df_afib_exclusions |>
   ) |>
   mutate(ep_centre = if_else(is.na(ep_centre), 0, ep_centre)) |> 
   add_charlson_score() |>
-  left_join(lkp_min_distance_ep, join_by(lsoa21code, fyear))
+  left_join(lkp_min_distance_ep_svt, join_by(lsoa21code, fyear))
 
 gc()
 gc()
 gc()
+
+VALE <- 
+
+# df_svt_join_tables |> saveRDS(here("data_raw", "df_svt_join_tables.rds"))
+df_svt_join_tables <- readRDS(here("data_raw", "df_svt_join_tables.rds"))
+
+
+# EDA -------------------------------------------------------------------------
+
+# Cohort summary by year (mirror of the AF arm QA):
+df_svt_join_tables |> 
+  group_by(fyear) |> 
+  summarise(
+    n_index = n(),
+    mn_age = mean(age),
+    n_diagnoses = mean(n_diagnoses),
+    p_afib_cocode = mean(dx_af_any),
+    p_recur_svt = mean(recurrent_svt),
+    n_24m_fu = sum(has_24m_followup),
+    rate_24m_abl = mean(ablation_24m)
+  ) |> 
+  ungroup()
+
+# only 10% of the ablations are for those with afib.
+# df_svt_join_tables |> 
+#   count(dx_af_any, ablation_24m) |> 
+#   mutate(p = n/sum(n))
 
 
 # # CHECK DIAGNOSIS CODING:
-# df_afib_join_tables |> 
+# df_svt_join_tables |>
+  # vctrs::vec_size() 
 #   # filter(fyear == "2010/11") |> 
 #   filter(fyear == "2023/24") |> 
 #   count(der_diagnosis_all, sort = T) |> 
 #   mutate(p = n/sum(n))
 # 
 # # CHECK COMORBIDITIES AS CODED BY CHARLSON
-# df_afib_join_tables |> 
+# df_svt_join_tables |>
 #   reframe(quantile(age))
 # 
-# df_afib_join_tables |> 
-#   group_by(fyear) |> 
-#   reframe(quantile(cci)) |> 
-#   view("cci_quantiles")
+df_svt_join_tables |>
+  group_by(fyear) |>
+  reframe(quantile(cci)) |>
+  view("cci_quantiles")
 # 
 # df_afib_join_tables |> 
 #   ggplot()+

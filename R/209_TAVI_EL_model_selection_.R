@@ -1,13 +1,13 @@
 df_tavi_elective_join_vars <- readRDS(here("data_raw", "df_tavi_elective_join_vars.rds"))
 
 
-# FROM "011_reference_data.R":
-lkp_icb <- read_csv(
-  here("data", list.files(here("data"), pattern = "SICBL"))
-) |>
-  clean_names() |>
-  # colnames()
-  select(lsoa21cd, sicbl25nm, icb25nm)
+# FROM "002_reference_data.R":
+# lkp_icb <- read_csv(
+#   here("data", list.files(here("data"), pattern = "SICBL"))
+# ) |>
+#   clean_names() |>
+#   # colnames()
+#   select(lsoa21cd, sicbl25nm, icb25nm)
 
 gc()
 gc()
@@ -65,12 +65,18 @@ tmp_elective_plus <- tmp_elective |>
     rural_urban_classification, "urban"
     ))
   
-tmp_elective_plus |>  
-  count(rural_urban_classification, sort = T) |> 
-  mutate(p = n/sum(n))
+# tmp_elective_plus |>  
+#   count(rural_urban_classification, sort = T) |> 
+#   mutate(p = n/sum(n))
 
     
-tmp_elective_plus |> glimpse()
+# tmp_elective_plus |> glimpse()
+
+tmp_elective_plus |> 
+  count(fyear, tavi) |> 
+  group_by(fyear) |> 
+  mutate(p = n/sum(n)) |> 
+  print(n=40)
 
 
 # TODO LIST ---------------------------------------------------------------
@@ -194,6 +200,42 @@ gc()
 gc()
 
 BIC(mod_tavi_el_12) #  53884.9 LOWEST SO FAR
+
+# TODO COVID JUST 19/20 20/21
+
+mod_tavi_el_12 |> 
+  broom::tidy(parametric = T) |> 
+  mutate(odds = exp(estimate)) |> 
+  mutate(lci = exp(estimate - 1.96 * std.error)) |> 
+  mutate(uci = exp(estimate + 1.96 * std.error)) |> 
+  select(term, estimate, odds, lci, uci) |> 
+  view("coeffs12")
+
+# 5. AS 4) ABOVE, BUT TEST WITHOUT COMORBIDITY AJUSTMENT --------------
+# TO EXAMINE THE SIZE OF THE CASEMIX EFFECT:
+# LOW: CASEMIX NOT PICKING UP ANATOMICAL / CLINCIAL SUITABLITY 
+# HIGH: HOW HIGH (GIVEN THAT WE WON'T CAPTURE IT ALL, WHAT DOES THIS SUGGEST?)
+
+mod_tavi_el_13 <- mgcv::gam(
+  formula = tavi ~
+    fyear*imd_decile +
+    covid_effect +
+    sex + s(age_std) + ti(age_std, fyear) + # s(cci_std) + s(frailty_std) + any_prior_admission + # 
+    distance_std + rural_urban_classification + rgn22nm + # EMERG ONLY: is_wkend +
+    # (RANDOM INTERCEPT): 
+    s(sicbl25nm, bs = "re"),
+  family = "binomial",
+  method = "REML",
+  data = tmp_elective_plus 
+)
+
+mod_tavi_el_13 |> saveRDS(here("data_raw", "mod_tavi_el_13.rds"))
+mod_tavi_el_13 <-  readRDS(here("data_raw", "mod_tavi_el_13.rds"))
+gc()
+gc()
+gc()
+
+BIC(mod_tavi_el_13) #  53884.9 LOWEST SO FAR
 
 # TODO COVID JUST 19/20 20/21
 

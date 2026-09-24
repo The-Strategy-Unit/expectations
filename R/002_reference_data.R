@@ -324,4 +324,29 @@ stopifnot(
 df_lookback_afib <- readRDS(here("data","df_lookback_afib.rds")) 
 
 
+# 13. HOSPITAL FRAILTY + COMORBIDITY LOOKBACK FOR AFIB -------------------------------------------
+
+## READ AND RUN QUERY FROM SCRIPT IN THE SQL FOLDER:
+# sql_script_lookback_svt <- here("sql", "[UDAL]falsification_frailty_lookback.sql")
+# 
+# query_lookback_svt <- readChar(sql_script_lookback_svt, file.info(sql_script_lookback_svt)$size) |>
+#   str_replace_all(string = _, "\n|\r|ï»¿", " ")
+# 
+# df_lookback_svt <- dbGetQuery(con_one, query_lookback_svt) |>
+#   as_tibble() |>
+#   clean_names()
+# 
+# gc()
+# gc()
+# gc()
+
+# df_lookback_svt |>
+#   mutate(across(contains("date"), ~ as_date(.))) |>
+#   saveRDS(here("data","df_lookback_svt.rds"))
+
+df_lookback_svt <- readRDS(here("data","df_lookback_svt.rds"))
+
+gc()
+gc()
+gc()
 

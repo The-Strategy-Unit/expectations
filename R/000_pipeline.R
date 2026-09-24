@@ -27,7 +27,7 @@ source(here::here("R", "001_setup.R"))
 
 source(here("R", "002_reference_data.R"))
 
-# AFIB CATHETER ABLATION -----------------------------------------
+# AFIB ABLATION -----------------------------------------
 
 # # source(here("R", "502_AFIB_load.R"))
 df_afib_raw <-  readRDS(here("data_raw", "df_afib_raw.rds"))
@@ -45,7 +45,13 @@ df_afib_join_tables_scored <- readRDS(here("data_raw", "df_afib_join_tables_scor
 # df_afib_cleaned |> saveRDS(here("data_raw", "df_afib_cleaned.rds"))
 df_afib_cleaned <-  readRDS(here("data_raw", "df_afib_cleaned.rds"))
 
+# SVT ABLATION -------------------------------------------------
 
+# df_svt_join_tables_scored |> saveRDS(here("data_raw", "df_svt_join_tables_scored.rds"))
+df_svt_join_tables_scored <- readRDS(here("data_raw", "df_svt_join_tables_scored.rds"))
+
+df_svt_cleaned |>  saveRDS(here("data_raw", "df_svt_cleaned.rds"))
+df_svt_cleaned <-  readRDS(here("data_raw", "df_svt_cleaned.rds"))
 
 
 # TAVI ----------------------------------------------------------

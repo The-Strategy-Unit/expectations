@@ -1,15 +1,24 @@
 # README
 # Select elective episodes for england-resident patients with
-# an lsoa assigned (99.4%) . We can't get IMD for others
+# an lsoa assigned (99.2%) . We can't get IMD for others
 
 # df_svt_raw |> 
 #   # count(fyear)
 #   # ONLY ENGLAND-RESIDENT PATIENTS WITH LSOA:
-#   count(str_detect(lsoa21code, "^E")) |> 
-#   mutate(p = n/sum(n))
+#   # count(eng = str_detect(lsoa21code, "^E")) |>
+#   # mutate(p = n/sum(n))
+#   count(fyear, eng = str_detect(lsoa21code, "^E")) |>
+#   group_by(fyear) |>
+#   mutate(p = n/sum(n)) |>
+#   ungroup() |>
+#   filter(eng == T)
 
 
-df_svt_exclusions <- df_svt_raw |>
+df_svt_raw |>
+  count(sex %in% 1:2) |> 
+  mutate(p = n/sum(n))
+
+df_svt_exclusions <- df_svt_raw |> 
   # ONLY ENGLAND-RESIDENT PATIENTS WITH LSOA:
   filter(str_detect(lsoa21code, "^E")) |> 
   mutate(yr = as.integer(str_sub(fyear, 6, 7)) - 10) |> 

@@ -72,7 +72,9 @@ abl_svt_elective AS (
         Admission_Date        AS abl_date
     FROM [Reporting_MESH_APC].[APCS_Core_Monthly_Snapshot]
     WHERE Der_Procedure_All LIKE '%K57[124]%'
-      AND (Der_Diagnosis_All LIKE '%I471%' OR Der_Diagnosis_All LIKE '%I456%')
+      AND (Der_Diagnosis_All LIKE '%I471%'
+      /* OR Der_Diagnosis_All LIKE '%I456%' */
+      )
       AND Admission_Method IN ('11','12','13')
 ),
 
@@ -106,22 +108,28 @@ cand AS (
         s.Der_Management_Type,
         s.Discharge_Method,
         s.Der_Diagnosis_All,
-        s.Der_Procedure_All,
+        s.Der_Procedure_All
         /* WPW entry-route flag (0 = classic SVT I47.1 primary) */
-        CASE WHEN s.Der_Diagnosis_All LIKE '||I456%' THEN 1 ELSE 0 END AS wpw_entry
+        /*CASE WHEN s.Der_Diagnosis_All LIKE '||I456%' THEN 1 ELSE 0 END AS wpw_entry*/
     FROM [Reporting_MESH_APC].[APCS_Core_Monthly_Snapshot] AS s
     WHERE ( s.Der_Diagnosis_All LIKE '||I471%'
             /* toggle: comment the next line out to restrict entry to I47.1 */
-            /*OR s.Der_Diagnosis_All LIKE '||I456%' */
+            /* OR s.Der_Diagnosis_All LIKE '||I456%' */
           )
       AND s.Admission_Method IN ('21','22','23','24','25','28','2A','2B','2D')
       AND s.der_age_at_cds_activity_date >= 18
       AND s.der_age_at_cds_activity_date <= 112
       AND s.der_pseudo_nhs_number IS NOT NULL
       /* exclude same-spell ablation: never faced the elective decision */
-      AND s.Der_Procedure_All NOT LIKE '%K57[124567]%'
-      AND s.Der_Procedure_All NOT LIKE '%K62[123]%'
-      AND s.Der_Procedure_All NOT LIKE '%K641%'
+      AND (
+               s.Der_Procedure_All NOT LIKE '%K57[124567]%' 
+           AND s.Der_Procedure_All NOT LIKE '%K62[123]%'
+           AND s.Der_Procedure_All NOT LIKE '%K641%'
+           /* NULLs are coded as "" pre 2018/19 and NULL thereafter
+              which causes problems unless the line below is included
+              */
+           OR  s.Der_Procedure_All IS NULL
+           )
 ),
 
 /* -- 5. FIRST CANDIDATE PER PATIENT ------------------------------------ */
@@ -180,7 +188,7 @@ SELECT
     i.Der_Provider_Site_Code,
     i.Admission_Method,
     i.Der_Management_Type,
-    i.wpw_entry,
+    /*i.wpw_entry,*/
     /* ---- OUTCOME ---- */
     na.first_abl_after_date,
     CASE WHEN na.first_abl_after_date IS NOT NULL
